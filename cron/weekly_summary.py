@@ -1,166 +1,65 @@
-# weekly_summary.py
+# cron/weekly_summary.py
 
-
-
-from datetime import datetime, timedelta
 import os
-import pandas as pd
-import sqlite3
-from dotenv import load_dotenv
-from openai import OpenAI
-from linebot.v3.messaging import Configuration, ApiClient, MessagingApi
-from linebot.v3.messaging.models import TextMessage, PushMessageRequest
-import sqlite3
+from datetime import datetime, timedelta
+from collections import Counter
 
-from app.db import get_paid_user_ids, fetch_latest_weekly_report
+from app.db import fetch_logs, get_all_paid_users
+from app.bot import push_message
 
 
-# 「chatlog.db」に接続
-conn = sqlite3.connect("chatlog.db", check_same_thread=False)
-cursor = conn.cursor()
+def get_last_week_logs(user_id):
+    """
+    指定したユーザーの過去7日間のログを取得する
+    Logs は dict 形式で、少なくとも 'emotion' キーを持つものとする
+    """
+    today = datetime.utcnow().date()
+    week_ago = today - timedelta(days=7)
+    return fetch_logs(user_id, start_date=week_ago, end_date=today)
 
-# すでに logs, members テーブルがある想定なので省略…
-# ── 週報保存用テーブルを作成 ──
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS weekly_reports (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT,
-    sent_at TEXT,
-    weekly_report TEXT
-)
-""")
-conn.commit()
 
-# ──────────────
-# ① 環境変数の読み込み
-# ──────────────
-load_dotenv()  # .env に CHANNEL_ACCESS_TOKEN, OPENAI_API_KEY などがある
+def count_emotions(logs):
+    """
+    ログから感情ラベルをカウントして Counter を返す
+    """
+    emotions = [log.get("emotion") for log in logs if log.get("emotion")]
+    return Counter(emotions)
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-configuration = Configuration(access_token=os.getenv("CHANNEL_ACCESS_TOKEN"))
-api_client = ApiClient(configuration)
-messaging_api = MessagingApi(api_client)
+def build_summary_message(counter: Counter) -> str:
+    """
+    カウンターから週次要約メッセージを生成する
+    ポジティブ・ネガティブを集計し、上位のラベルも列挙
+    """
+    POSITIVE = {"楽しい", "幸せ", "感謝", "安堵"}
+    NEGATIVE = {"死にたい", "つらい", "不安", "寂しい", "疲れ", "怒り", "ストレス"}
 
-# ──────────────
-# ② 有料会員 ID を SQLite から取得する関数
-# ──────────────
-def get_paid_user_ids():
-    conn = sqlite3.connect("chatlog.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT user_id FROM members WHERE is_paid = 1")
-    rows = cursor.fetchall()
-    conn.close()
-    return [row[0] for row in rows]
+    total_pos = sum(counter.get(emo, 0) for emo in POSITIVE)
+    total_neg = sum(counter.get(emo, 0) for emo in NEGATIVE)
 
-# ──────────────
-# ③ 週報送信用メイン処理
-# ──────────────
-def send_weekly_reports():
-    log_dir = "logs"
-    one_week_ago = datetime.now() - timedelta(days=7)
+    lines = ["今週の感情傾向："]
+    # ポジティブ／ネガティブの合計を先に表示
+    lines.append(f"・ポジティブ: {total_pos}回, ネガティブ: {total_neg}回")
 
-    # 事前に「感情キーワード」を定義
-    emotional_keywords = {
-        "悲しみ": ["悲しい", "つらい", "寂しい"],
-        "不安": ["不安", "心配", "焦り"],
-        "怒り": ["怒り", "むかつく", "腹が立つ"],
-        "喜び": ["嬉しい", "楽しい", "幸せ"],
-        "疲れ": ["疲れ", "しんどい", "だるい"],
-        "驚き": ["驚き", "びっくり", "まさか"],
-    }
+    # 個別ラベルの頻度を上位順に表示
+    for emo, cnt in counter.most_common():
+        lines.append(f"・{emo}: {cnt}回")
 
-    for user_id in get_paid_user_ids():
-        log_file = os.path.join(log_dir, f"user_{user_id}.csv")
-        if not os.path.exists(log_file):
-            continue
+    return "\n".join(lines)
 
-        df = pd.read_csv(log_file)
-        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
-        last_week_logs = df[df["timestamp"] > one_week_ago]
-        if last_week_logs.empty:
-            continue
 
-        # ────────────
-        # (1) 会話要約を作成
-        # ────────────
-        conversation = ""
-        for _, row in last_week_logs.iterrows():
-            conversation += f"ユーザー: {row['user_message']}\nAI: {row['ai_reply']}\n"
-
-        try:
-            summary_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "以下の会話を読んで、今週の状況をやさしく短くまとめてください。"
-                                "あまりAIみたくならないように敬語はあまり使わないようにして友達に話すような文でまとめてください"
-                            
-                    },
-                    {"role": "user", "content": conversation}
-                ]
-            )
-            summary_text = summary_response.choices[0].message.content.strip()
-        except Exception:
-            summary_text = "今週のまとめ作成中にエラーが発生しました。"
-
-        # ────────────
-        # (2) 1週間の感情キーワード集計（ユーザー発言ベース）
-        # ────────────
-        # カウンター初期化
-        emotion_counter = {label: 0 for label in emotional_keywords.keys()}
-
-        # 各発言ごとにキーワードを検索
-        for _, row in last_week_logs.iterrows():
-            text = str(row["user_message"])
-            for label, keywords in emotional_keywords.items():
-                for kw in keywords:
-                    if kw in text:
-                        emotion_counter[label] += 1
-
-        # 集計結果をテキストに整形
-        # 0 のものは含めず、あるものだけ並べる
-        emotion_report_parts = [
-            f"{label}：{count}回"
-            for label, count in emotion_counter.items()
-            if count > 0
-        ]
-        if emotion_report_parts:
-            emotion_report = "\n".join(emotion_report_parts)
-        else:
-            emotion_report = "今週は落ち着いた感じの１週間だったね！"
-
-        # ────────────
-        # (3) 週報メッセージ本文を組み立て
-        # ────────────
-        weekly_report = (
-            f"🗓️ 今週のふりかえり！：\n{summary_text}\n\n"
-            f"🧠 今週はどんな感情傾向だったかな？：\n{emotion_report}"
-        )
-
-        # ────────────
-        # (4) LINE へプッシュ送信（PushMessageRequest を使用）
-        # ────────────
-        try:
-            messaging_api.push_message(
-                PushMessageRequest(
-                    to=user_id,
-                    messages=[TextMessage(text=weekly_report)]
-                )
-            )
-        except Exception as e:
-            print(f"LINE送信エラー ({user_id}):", e)
-
-        # データベースに保存
-        sent_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cursor.execute("""
-            INSERT INTO weekly_reports (user_id, sent_at, weekly_report)
-            VALUES (?, ?, ?)
-        """, (user_id, sent_at, weekly_report))
-        conn.commit()
-
+def send_weekly_summary(user_id: str):
+    """
+    一人のユーザーに対して週次要約を生成しLINEで送信する
+    """
+    logs = get_last_week_logs(user_id)
+    counter = count_emotions(logs)
+    message = build_summary_message(counter)
+    push_message(user_id, message)
 
 
 if __name__ == "__main__":
-    send_weekly_reports()
+    # 有料ユーザー全員に週次要約を送信
+    for user_id in get_all_paid_users():
+        send_weekly_summary(user_id)
+
