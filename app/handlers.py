@@ -56,7 +56,7 @@ def handle_message(event: MessageEvent):
             "role": "system",
             "content": "（以下は今週の週報です）\n" + latest
         })
-    for u, a in fetch_last_n_logs(user_id, n=5):
+    for u, a, emotion in fetch_last_n_logs(user_id, n=5):
         context_messages.append({"role":"user",      "content":u})
         context_messages.append({"role":"assistant", "content":a})
     context_messages.append({"role":"user", "content":user_text})
