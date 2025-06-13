@@ -6,10 +6,23 @@ from dotenv import load_dotenv
 
 # ① .env を読み込んで…
 load_dotenv()
-# ② ログレベルをDEBUGにセット
-logging.basicConfig(level=logging.DEBUG)
 
-# ③ Flaskアプリ作成＆ハンドラ登録（import handlers が decorator を動かす）
+
+
+
+# ② ルートロガーは INFO 以上だけ出す
+logging.basicConfig(level=logging.INFO)
+
+# ③ 自分の app モジュールだけ DEBUG を出す
+#logging.getLogger("app").setLevel(logging.DEBUG)
+
+# ④ 外部ライブラリは WARNING 以上だけ出す
+#logging.getLogger("openai").setLevel(logging.WARNING)
+#logging.getLogger("httpcore").setLevel(logging.WARNING)
+#logging.getLogger("httpx").setLevel(logging.WARNING)
+
+
+# ⑤ Flaskアプリ作成＆ハンドラ登録
 from app import create_app
 import app.handlers
 
