@@ -44,8 +44,7 @@ def handle_message(event: MessageEvent):
     log = current_app.logger
 
     # デバッグログを出力
-    log.debug(f"handle_message called: user_id={user_id}, user_text={user_text}")
-    log.debug(f"reply_token: {reply_token!r} (len={len(reply_token)})")
+    log.info(f"Received message: {user_text!r} from {user_id}")
 
 
     # 2) コンテキスト組み立て
