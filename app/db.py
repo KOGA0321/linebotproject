@@ -2,7 +2,7 @@
 
 import sqlite3
 from datetime import datetime
-from app.plans import PLAN_LIMITS
+from app.plans import PLANS
 from functools import lru_cache
 # DB ファイルパス（環境変数でも定義可能）
 DB_PATH = "chatlog.db"
@@ -55,7 +55,7 @@ def get_plan_config(user_id: str) -> dict:
     cursor.execute("SELECT plan FROM members WHERE user_id = ?", (user_id,))
     row = cursor.fetchone()
     plan = row[0] if row else "free"
-    return load_plans().get(plan, load_plans()["free"])
+    return PLANS.get(plan, PLANS["free"])
 
 def is_within_limit(user_id: str) -> bool:
     cfg   = get_plan_config(user_id)
@@ -145,7 +145,7 @@ def is_within_limit(user_id: str) -> bool:
     # 1) ユーザーのプランを取得
     plan  = get_user_plan(user_id)
     # 2) プランごとの上限を得る
-    limit = PLAN_LIMITS.get(plan)
+    limit = PLANS.get(plan)
 
     # 3) 無制限プランならOK
     if limit is None:
