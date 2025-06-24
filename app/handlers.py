@@ -10,7 +10,8 @@ from dotenv import load_dotenv
 from flask import current_app
 
 # app/handlers.py の先頭近くに追記
-from app.db import is_paid_user, save_log_to_sqlite
+from app.db import is_paid_user, save_log_to_sqlite,is_within_limit, increment_usage
+
 from app.utils import client  # OpenAI クライアントを作っているならここから
 
 
@@ -40,6 +41,15 @@ def handle_message(event: MessageEvent):
     user_text   = event.message.text
     user_id     = event.source.user_id
     reply_token = event.reply_token
+
+    if not is_within_limit(user_id):
+        # 無料枠超過時の返信
+        reply = "ごめんね、今日はもう無料枠の上限に達しちゃったよ😢\nまた明日試してね！"
+        reply_text(event.reply_token, reply)
+        return
+    else:
+        # 使った回数をカウントアップ
+        increment_usage(user_id)
 
     log = current_app.logger
 
