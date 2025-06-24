@@ -2,7 +2,7 @@
 
 import sqlite3
 from datetime import datetime
-from app.bot import PLAN_LIMITS
+from app.plans import PLAN_LIMITS
 from functools import lru_cache
 # DB ファイルパス（環境変数でも定義可能）
 DB_PATH = "chatlog.db"
