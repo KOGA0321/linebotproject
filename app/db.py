@@ -21,23 +21,42 @@ CREATE TABLE IF NOT EXISTS logs (
     summary TEXT,
     emotion TEXT DEFAULT ''
 );
+
 CREATE TABLE IF NOT EXISTS members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT UNIQUE,
+    plan TEXT DEFAULT 'free',
     is_paid INTEGER DEFAULT 0,
     created_at TEXT
 );
+
 CREATE TABLE IF NOT EXISTS weekly_reports (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT,
     sent_at TEXT,
     weekly_report TEXT
 );
+
 CREATE TABLE IF NOT EXISTS usage_limit (
-    user_id    TEXT,
-    date       TEXT,      -- 'YYYY-MM-DD'
+    user_id TEXT,
+    date TEXT,
     call_count INTEGER DEFAULT 0,
     PRIMARY KEY (user_id, date)
+);
+
+CREATE TABLE IF NOT EXISTS monthly_usage (
+    user_id TEXT,
+    month TEXT,
+    call_count INTEGER DEFAULT 0,
+    PRIMARY KEY (user_id, month)
+);
+
+CREATE TABLE IF NOT EXISTS plans (
+    plan TEXT PRIMARY KEY,
+    daily_limit INTEGER,
+    monthly_limit INTEGER,
+    overage_fee INTEGER
+);
 """)
 conn.commit()
 

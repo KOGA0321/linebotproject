@@ -44,6 +44,49 @@ def run_migrations():
         );
     """)
     print("✔️ Ensured table: plans")
+        # 4) members テーブルを作成(無ければ)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT UNIQUE,
+            plan TEXT DEFAULT 'free',
+            is_paid INTEGER DEFAULT 0,
+            created_at TEXT
+        );
+    """)
+    print("✔️ Ensured table: members")
+
+    # 5) weekly_reports テーブルを作成（なければ）
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS weekly_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            sent_at TEXT,
+            weekly_report TEXT
+        );
+    """)
+    print("✔️ Ensured table: weekly_reports")
+
+    # 6) usage_limit テーブルを作成（日次利用カウント用）
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS usage_limit (
+            user_id TEXT,
+            date TEXT,
+            call_count INTEGER DEFAULT 0,
+            PRIMARY KEY (user_id, date)
+        );
+    """)
+    print("✔️ Ensured table: usage_limit")
+    # 7) monthly_usage テーブルを作成（月次利用カウント用）
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS monthly_usage (
+            user_id TEXT,
+            month TEXT,
+            call_count INTEGER DEFAULT 0,
+            PRIMARY KEY (user_id, month)
+        );
+    """)
+    print("✔️ Ensured table: monthly_usage")
 
     conn.commit()
     conn.close()
