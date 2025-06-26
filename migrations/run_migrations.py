@@ -56,6 +56,23 @@ def run_migrations():
     """)
     print("✔️ Ensured table: members")
 
+        # ここに stripe 用カラム追加
+
+    cur.execute("PRAGMA table_info(members);")
+    cols = [r[1] for r in cur.fetchall()]
+    if "stripe_customer_id" not in cols:
+        cur.execute("""
+          ALTER TABLE members
+            ADD COLUMN stripe_customer_id TEXT;
+        """)
+        print("🔧 Added column: stripe_customer_id")
+    if "stripe_subscription_id" not in cols:
+        cur.execute("""
+          ALTER TABLE members
+            ADD COLUMN stripe_subscription_id TEXT;
+        """)
+        print("🔧 Added column: stripe_subscription_id")
+
     # 5) weekly_reports テーブルを作成（なければ）
     cur.execute("""
         CREATE TABLE IF NOT EXISTS weekly_reports (

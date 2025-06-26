@@ -18,6 +18,15 @@ messaging_api = MessagingApi(api_client)
 # WebhookHandler
 handler = WebhookHandler(channel_secret=os.getenv("CHANNEL_SECRET"))
 
+# app/limits.py
+PLAN_LIMITS = {
+    "free":    10,    # 1日あたり10回
+    "basic":   30,
+    "plus":    100,
+    "premium": None,  # None にしておけば無制限扱い
+}
+
+
 def send_reply(reply_token: str, text: str):
     """
     v3 SDK で LINE にテキストを返信する
