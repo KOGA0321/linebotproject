@@ -10,6 +10,8 @@ from flask import Blueprint, request, jsonify, abort
 from app.stripe import create_checkout_session
 from app.db     import add_stripe_customer_id, set_user_plan
 from app.utils  import plan_from_price   # もし逆引きヘルパーが別モジュールにあるなら
+from app.db import add_stripe_customer_id, set_user_plan
+
 
 
 bp = Blueprint("webhook", __name__)

@@ -190,6 +190,43 @@ def increment_usage(user_id: str):
     conn.commit()
 
 
+DATABASE = 'database.db'
+
+def get_db_connection():
+    """DB接続とカーソル取得"""
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn, conn.cursor()
+
+def add_stripe_customer_id(user_id, customer_id):
+    """
+    membersテーブルのstripe_customer_id列を更新
+    （あなたの定義に合わせてテーブル名はmembersにしています）
+    """
+    conn, cursor = get_db_connection()
+    cursor.execute(
+        "UPDATE members SET stripe_customer_id = ? WHERE user_id = ?",
+        (customer_id, user_id)
+    )
+    conn.commit()
+    conn.close()
+
+def set_user_plan(user_id, subscription_id, plan_name):
+    """
+    membersテーブルのstripe_subscription_id, plan, is_paid列を更新
+    """
+    conn, cursor = get_db_connection()
+    cursor.execute(
+        """
+        UPDATE members
+           SET stripe_subscription_id = ?,
+               plan                   = ?,
+               is_paid                = 1
+         WHERE user_id = ?
+        """,
+        (subscription_id, plan_name, user_id)
+    )
+    conn.commit()
 def is_paid_user(user_id: str) -> bool:
     cursor.execute(
         "SELECT is_paid FROM members WHERE user_id = ?",
