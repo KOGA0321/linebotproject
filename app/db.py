@@ -227,6 +227,8 @@ def set_user_plan(user_id, subscription_id, plan_name):
         (subscription_id, plan_name, user_id)
     )
     conn.commit()
+    conn.close()
+
 def is_paid_user(user_id: str) -> bool:
     cursor.execute(
         "SELECT is_paid FROM members WHERE user_id = ?",
