@@ -18,3 +18,4 @@ docker-compose.override.yml
 # IDE / エディタ
 .vscode/
 .idea/
+.DS_Store
