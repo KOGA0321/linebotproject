@@ -1,34 +1,35 @@
 
 # app/routes.py
 
-from flask import Blueprint, request, jsonify, abort
-import traceback
 import os
+import traceback
 import stripe
 import requests
 
-# ← handler は v3 SDK の WebhookHandler のままでOK
-from app.bot       import handler  
-from app.stripe    import create_checkout_session
-from app.db        import add_stripe_customer_id, set_user_plan
-from app.utils     import plan_from_price
+from flask import Blueprint, request, jsonify, abort
 
-# ─────────── v2 SDK のインポート & クライアント初期化 ───────────
 from linebot import LineBotApi
 from linebot.models import (
     RichMenu, RichMenuSize, RichMenuArea, RichMenuBounds, URIAction
 )
-line_bot_api = LineBotApi(os.getenv("CHANNEL_ACCESS_TOKEN"))
-# ──────────────────────────────────────────────────────────────
+
+from app.bot    import handler
+from app.stripe import create_checkout_session
+from app.db     import add_stripe_customer_id, set_user_plan
+from app.utils  import plan_from_price
 
 bp = Blueprint("webhook", __name__)
+
+# LINE v2 SDK client for rich menu management
+line_bot_api = LineBotApi(os.getenv("CHANNEL_ACCESS_TOKEN"))
+
 
 @bp.route("/callback", methods=["POST"])
 def callback():
     signature = request.headers.get("X-Line-Signature")
     body      = request.get_data(as_text=True)
 
-    print(f"[Webhook] body:  {body}")
+    print(f"[Webhook] body:      {body}")
     print(f"[Webhook] signature: {signature}")
 
     try:
@@ -66,20 +67,22 @@ def stripe_webhook():
         sub_id   = sess["subscription"]
         price_id = sess["display_items"][0]["price"]["id"]
         plan     = plan_from_price(price_id)
+
+        # save to DB
         set_user_plan(user_id, sub_id, plan)
-        # プランに応じてメニューをリンク
-    if plan == "personal":
-        rm_id = create_personal_rich_menu()
-    else:  # plus の場合
-        rm_id = create_plus_rich_menu()
-    # このユーザーにだけ割り当て
+
+        # link corresponding rich menu
+        if plan == "personal":
+            rm_id = create_personal_rich_menu()
+        else:
+            rm_id = create_plus_rich_menu()
         line_bot_api.link_rich_menu_to_user(user_id, rm_id)
 
     return "", 200
 
 
 def create_personal_rich_menu():
-    """Personalプラン用リッチメニューを作成"""
+    """Create and upload image for Personal plan rich menu."""
     rm = RichMenu(
         size=RichMenuSize(width=2500, height=1686),
         selected=False,
@@ -96,18 +99,21 @@ def create_personal_rich_menu():
         ]
     )
     rm_id = line_bot_api.create_rich_menu(rm)
-    
-    with open("personal_plan.png", "rb") as f:
-        try:
-            # 空の JSON レスポンスで例外になるが、画像はアップロード済みなので無視
-            line_bot_api.set_rich_menu_image(rm_id, "image/png", f)
-        except requests.exceptions.JSONDecodeError:
-            pass
+
+    # upload image from app/static
+    img_path = os.path.join(os.path.dirname(__file__), "static", "Personal_plan.png")
+    with open(img_path, "rb") as f:
+        data = f.read()
+    try:
+        line_bot_api.set_rich_menu_image(rm_id, "image/png", data)
+    except requests.exceptions.JSONDecodeError:
+        pass
 
     return rm_id
 
+
 def create_plus_rich_menu():
-    """Plusプラン用リッチメニューを作成"""
+    """Create and upload image for Plus plan rich menu."""
     rm = RichMenu(
         size=RichMenuSize(width=2500, height=1686),
         selected=False,
@@ -124,9 +130,13 @@ def create_plus_rich_menu():
         ]
     )
     rm_id = line_bot_api.create_rich_menu(rm)
-    with open("plus_plan.png", "rb") as f:
-        try:
-            line_bot_api.set_rich_menu_image(rm_id, "image/png", f)
-        except requests.exceptions.JSONDecodeError:
-            pass
+
+    img_path = os.path.join(os.path.dirname(__file__), "static", "Plus_plan.png")
+    with open(img_path, "rb") as f:
+        data = f.read()
+    try:
+        line_bot_api.set_rich_menu_image(rm_id, "image/png", data)
+    except requests.exceptions.JSONDecodeError:
+        pass
+
     return rm_id
