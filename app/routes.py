@@ -86,8 +86,10 @@ def create_personal_rich_menu():
             
     img_path = os.path.join(os.path.dirname(__file__), "static", "Personal_plan.png")
     # DEBUG: 画像ファイルの絶対パスと存在確認
-    print("[DEBUG] Personal image path:", pathlib.Path(img_path).resolve())
-    print("[DEBUG] Exists?", os.path.exists(img_path))
+    import os, pathlib
+    print("[DEBUG] Personal image path:", pathlib.Path(os.path.join(os.path.dirname(__file__), "static", "Personal_plan.png")).resolve())
+    print("[DEBUG] Exists?       ", os.path.exists(os.path.join(os.path.dirname(__file__), "static", "Personal_plan.png")))
+
     rm = RichMenu(
         size=RichMenuSize(width=2500, height=1686),
         selected=False,
