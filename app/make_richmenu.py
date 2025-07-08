@@ -54,7 +54,7 @@ def create_personal_rich_menu():
     # ④ PNG をアップロード
     img_path = os.path.join(
         os.path.dirname(__file__),      # …/linebotproject3
-        "app", "static", "Personal_plan.png"
+         "static", "Personal_plan_stretched.jpg"
     )
     print("画像パス:", img_path)
     with open(img_path, "rb") as f:
