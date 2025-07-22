@@ -71,79 +71,62 @@ def stripe_webhook():
         # save to DB
         set_user_plan(user_id, sub_id, plan)
 
-        # link corresponding rich menu
-        if plan == "personal":
-            rm_id = create_personal_rich_menu()
-        else:
-            rm_id = create_plus_rich_menu()
-        line_bot_api.link_rich_menu_to_user(user_id, rm_id)
+       
+           # プランに関わらず共通メニューを作成
+    rm_id = create_main_rich_menu()
 
     return "", 200
 
 
-def create_personal_rich_menu():
-    """Create and upload image for Personal plan rich menu.""" 
-            
-    img_path = os.path.join(os.path.dirname(__file__), "static", "Personal_plan.png")
-    # DEBUG: 画像ファイルの絶対パスと存在確認
-    import pathlib, os
-    print("[DEBUG] Personal image path:", pathlib.Path(img_path).resolve())
-    print("[DEBUG] Exists?            :", os.path.exists(img_path))
+def create_main_rich_menu():
+    """Create and upload the 3-split CareFriend rich menu."""
+    from linebot.models import (
+        RichMenu, RichMenuSize, RichMenuArea, RichMenuBounds, URIAction
+    )
+    import os
+
+    img_path = os.path.join(
+        os.path.dirname(__file__),
+        "static",
+        "richmenu_carefriend_3split.jpg"
+    )
 
     rm = RichMenu(
         size=RichMenuSize(width=2500, height=1686),
         selected=False,
-        name="Personalメニュー",
-        chat_bar_text="Personalプラン",
+        name="CareFriendメニュー",
+        chat_bar_text="メニューを開く",
         areas=[
+            # Personalプラン
             RichMenuArea(
-                bounds=RichMenuBounds(x=0, y=0, width=2500, height=1686),
+                bounds=RichMenuBounds(x=0,    y=0, width=833, height=1686),
                 action=URIAction(
-                    label="Personal購入",
+                    label="Personalプラン",
                     uri=f"https://{os.getenv('DOMAIN')}/create-checkout/personal"
                 )
-            )
-        ]
-    )
-    rm_id = line_bot_api.create_rich_menu(rm)
-
-    # upload image from app/static
-    img_path = os.path.join(os.path.dirname(__file__), "static", "Personal_plan.png")
-    with open(img_path, "rb") as f:
-        data = f.read()
-    try:
-        line_bot_api.set_rich_menu_image(rm_id, "image/png", data)
-    except requests.exceptions.JSONDecodeError:
-        pass
-
-    return rm_id
-
-
-def create_plus_rich_menu():
-    """Create and upload image for Plus plan rich menu."""
-    rm = RichMenu(
-        size=RichMenuSize(width=2500, height=1686),
-        selected=False,
-        name="Plusメニュー",
-        chat_bar_text="Plusプラン",
-        areas=[
+            ),
+            # Plusプラン
             RichMenuArea(
-                bounds=RichMenuBounds(x=0, y=0, width=2500, height=1686),
+                bounds=RichMenuBounds(x=833,  y=0, width=834, height=1686),
                 action=URIAction(
-                    label="Plus購入",
+                    label="Plusプラン",
                     uri=f"https://{os.getenv('DOMAIN')}/create-checkout/plus"
                 )
-            )
+            ),
+            # ホームページ
+            RichMenuArea(
+                bounds=RichMenuBounds(x=1667, y=0, width=833, height=1686),
+                action=URIAction(
+                    label="ホームページ",
+                    uri="https://carefriend.jp"  # 必要に応じて変更
+                )
+            ),
         ]
     )
+
     rm_id = line_bot_api.create_rich_menu(rm)
-
-    img_path = os.path.join(os.path.dirname(__file__), "static", "Plus_plan.png")
     with open(img_path, "rb") as f:
-        data = f.read()
-    try:
-        line_bot_api.set_rich_menu_image(rm_id, "image/png", data)
-    except requests.exceptions.JSONDecodeError:
-        pass
-
+        line_bot_api.set_rich_menu_image(rm_id, "image/jpeg", f.read())
     return rm_id
+
+    
