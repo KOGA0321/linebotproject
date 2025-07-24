@@ -118,7 +118,7 @@ def create_main_rich_menu():
                 bounds=RichMenuBounds(x=1667, y=0, width=833, height=1686),
                 action=URIAction(
                     label="ホームページ",
-                    uri="https://carefriend.jp"  # 必要に応じて変更
+                    uri="https://orange257883.studio.site/"  # 必要に応じて変更
                 )
             ),
         ]
