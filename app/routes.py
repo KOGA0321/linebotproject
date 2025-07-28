@@ -80,10 +80,7 @@ def stripe_webhook():
 
 def create_main_rich_menu():
     """Create and upload the 3-split CareFriend rich menu."""
-    from linebot.models import (
-        RichMenu, RichMenuSize, RichMenuArea, RichMenuBounds, URIAction
-    )
-    import os
+
 
     img_path = os.path.join(
         os.path.dirname(__file__),
@@ -102,7 +99,7 @@ def create_main_rich_menu():
                 bounds=RichMenuBounds(x=0,    y=0, width=833, height=1686),
                 action=URIAction(
                     label="Personalプラン",
-                    uri=f"https://{os.getenv('DOMAIN')}/create-checkout/personal"
+                    uri=f"https://{os.getenv('DOMAIN_PERSONAL')}/create-checkout/personal"
                 )
             ),
             # Plusプラン
@@ -110,7 +107,7 @@ def create_main_rich_menu():
                 bounds=RichMenuBounds(x=833,  y=0, width=834, height=1686),
                 action=URIAction(
                     label="Plusプラン",
-                    uri=f"https://{os.getenv('DOMAIN')}/create-checkout/plus"
+                    uri=f"https://{os.getenv('DOMAIN_PLUS')}/create-checkout/plus"
                 )
             ),
             # ホームページ
