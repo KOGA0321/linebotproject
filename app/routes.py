@@ -99,15 +99,15 @@ def create_main_rich_menu():
                 bounds=RichMenuBounds(x=0,    y=0, width=833, height=1686),
                 action=URIAction(
                     label="Personalプラン",
-                    uri=f"https://{os.getenv('DOMAIN_PERSONAL')}/create-checkout/personal"
-                )
+                    uri=os.getenv("DOMAIN_PERSONAL")
+                    )
             ),
             # Plusプラン
             RichMenuArea(
                 bounds=RichMenuBounds(x=833,  y=0, width=834, height=1686),
                 action=URIAction(
                     label="Plusプラン",
-                    uri=f"https://{os.getenv('DOMAIN_PLUS')}/create-checkout/plus"
+                    uri=os.getenv("DOMAIN_PLUS")
                 )
             ),
             # ホームページ
