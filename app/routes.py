@@ -103,7 +103,7 @@ def create_main_rich_menu():
                 bounds=RichMenuBounds(x=0,    y=0, width=833, height=1686),
                 action=URIAction(
                     label="Personalプラン",
-                    uri=os.getenv("DOMAIN_PERSONAL")
+                    DOMAIN_PERSONAL = BaseConfig.DOMAIN_PERSONAL 
                     )
             ),
             # Plusプラン
