@@ -25,6 +25,7 @@ logging.basicConfig(level=logging.INFO)
 # ⑤ Flaskアプリ作成＆ハンドラ登録
 from app import create_app
 import app.handlers
+print("[DEBUG] STRIPE_SECRET_KEY:", os.getenv("STRIPE_SECRET_KEY"))
 
 app = create_app()
 

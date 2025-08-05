@@ -10,6 +10,7 @@ class BaseConfig:
     CHANNEL_ACCESS_TOKEN = os.getenv("CHANNEL_ACCESS_TOKEN")
     CHANNEL_SECRET       = os.getenv("CHANNEL_SECRET")
     OPENAI_API_KEY       = os.getenv("OPENAI_API_KEY")
+    STRIPE_SECRET_KEY    = os.getenv("STRIPE_SECRET_KEY")
 
     LOG_LEVEL = logging.INFO
 

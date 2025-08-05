@@ -17,6 +17,10 @@ from app.bot    import handler
 from app.stripe import create_checkout_session
 from app.db     import add_stripe_customer_id, set_user_plan
 from app.utils  import plan_from_price
+from config import BaseConfig
+
+
+stripe.api_key = BaseConfig.STRIPE_SECRET_KEY
 
 bp = Blueprint("webhook", __name__)
 
@@ -115,7 +119,7 @@ def create_main_rich_menu():
                 bounds=RichMenuBounds(x=1667, y=0, width=833, height=1686),
                 action=URIAction(
                     label="ホームページ",
-                    uri="https://orange257883.studio.site/"  # 必要に応じて変更
+                    uri=os.getenv("DOMAIN_URL")  # 必要に応じて変更
                 )
             ),
         ]
