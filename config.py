@@ -11,6 +11,8 @@ class BaseConfig:
     CHANNEL_SECRET       = os.getenv("CHANNEL_SECRET")
     OPENAI_API_KEY       = os.getenv("OPENAI_API_KEY")
     STRIPE_SECRET_KEY    = os.getenv("STRIPE_SECRET_KEY")
+    DOMAIN_PERSONAL      = os.getenv("DOMAIN_PERSONAL")
+
 
     LOG_LEVEL = logging.INFO
 

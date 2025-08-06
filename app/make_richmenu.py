@@ -9,7 +9,7 @@ make_richmenu.py
 import os
 import time
 from dotenv import load_dotenv
-
+import stripe
 # .env を読み込む  (.env が不要ならこの2行は消してOK)
 load_dotenv()                   
 
@@ -17,7 +17,15 @@ from linebot import LineBotApi
 from linebot.models import (
     RichMenu, RichMenuSize, RichMenuArea, RichMenuBounds, URIAction
 )
+import sys
 
+# config.py があるフォルダを読み込ませる
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from config import BaseConfig
+
+
+stripe.api_key = BaseConfig.STRIPE_SECRET_KEY
 # ----------------------------------------
 # ① LINE クライアント初期化
 # ----------------------------------------
@@ -41,7 +49,7 @@ def create_personal_rich_menu():
                 bounds=RichMenuBounds(x=0, y=0, width=2500, height=1686),
                 action=URIAction(
                     label="Personal購入",
-                    uri=f"https://{os.getenv('DOMAIN')}/create-checkout/personal"
+                    uri=f"{BaseConfig.DOMAIN_PERSONAL}/create-checkout/personal"
                 )
             )
         ]
