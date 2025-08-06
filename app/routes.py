@@ -81,6 +81,23 @@ def stripe_webhook():
 
     return "", 200
 
+@bp.route("/create-checkout/personal", methods=["GET"])
+def get_checkout_personal():
+    # 仮の user_id を使用（本番はLINEのユーザーIDなどで動的に処理すべき）
+    user_id = "test-user-id"
+    session = create_checkout_session(user_id, "personal")
+
+    # Stripe チェックアウトURLに即リダイレクト
+    return f"""
+    <html>
+      <head><meta http-equiv="refresh" content="0; URL={session.url}" /></head>
+      <body>
+        <p>リダイレクト中…</p>
+      </body>
+    </html>
+    """
+
+
 
 def create_main_rich_menu():
     """Create and upload the 3-split CareFriend rich menu."""
