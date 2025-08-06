@@ -49,7 +49,7 @@ def create_personal_rich_menu():
                 bounds=RichMenuBounds(x=0, y=0, width=2500, height=1686),
                 action=URIAction(
                     label="Personal購入",
-                    uri=f"{BaseConfig.DOMAIN_PERSONAL}/create-checkout/personal"
+                    uri=f"{BaseConfig.DOMAIN_PERSONAL}"
                 )
             )
         ]
