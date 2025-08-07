@@ -24,4 +24,6 @@ def create_checkout_session(user_id: str, plan: str):
         success_url=os.getenv("DOMAIN_URL") + "/success?session_id={CHECKOUT_SESSION_ID}",
         cancel_url =os.getenv("DOMAIN_URL") + "/cancel",
     )
+    print("[DEBUG] Stripe session.url:", session.url)
+
     return session

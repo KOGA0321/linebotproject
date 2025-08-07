@@ -45,13 +45,30 @@ def create_personal_rich_menu():
         name="Personalメニュー",
         chat_bar_text="Personalプラン",
         areas=[
+            # Personal
             RichMenuArea(
-                bounds=RichMenuBounds(x=0, y=0, width=2500, height=1686),
+                bounds=RichMenuBounds(x=0, y=0, width=833, height=1686),
                 action=URIAction(
-                    label="Personal購入",
-                    uri=f"{BaseConfig.DOMAIN_PERSONAL}"
+                    label="Personalプラン",
+                    uri=f"{BaseConfig.DOMAIN_PERSONAL}/create-checkout/personal"
                 )
-            )
+            ),
+            # Plus
+            RichMenuArea(
+                bounds=RichMenuBounds(x=833, y=0, width=834, height=1686),
+                action=URIAction(
+                    label="Plusプラン",
+                    uri=f"{BaseConfig.DOMAIN_PLUS}/create-checkout/plus"
+                )
+            ),
+            # ホームページ
+            RichMenuArea(
+                bounds=RichMenuBounds(x=1667, y=0, width=833, height=1686),
+                action=URIAction(
+                    label="ホームページ",
+                    uri=BaseConfig.DOMAIN_HOMEPAGE    # ← ここを変更
+                )
+            ),
         ]
     )
 

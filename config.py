@@ -12,6 +12,8 @@ class BaseConfig:
     OPENAI_API_KEY       = os.getenv("OPENAI_API_KEY")
     STRIPE_SECRET_KEY    = os.getenv("STRIPE_SECRET_KEY")
     DOMAIN_PERSONAL      = os.getenv("DOMAIN_PERSONAL")
+    DOMAIN_HOMEPAGE    = os.getenv("DOMAIN_HOMEPAGE")
+    DOMAIN_PLUS        = os.getenv("DOMAIN_PLUS")
 
 
     LOG_LEVEL = logging.INFO
