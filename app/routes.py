@@ -83,16 +83,13 @@ def stripe_webhook():
 
 @bp.route("/create-checkout/personal", methods=["GET"])
 def get_checkout_personal():
-    # 仮の user_id を使用（本番はLINEのユーザーIDなどで動的に処理すべき）
-    user_id = "test-user-id"
+    user_id = "test-user-id"  # 仮のIDでOK
     session = create_checkout_session(user_id, "personal")
-
-    # Stripe チェックアウトURLに即リダイレクト
     return f"""
     <html>
       <head><meta http-equiv="refresh" content="0; URL={session.url}" /></head>
       <body>
-        <p>リダイレクト中…</p>
+        <p>リダイレクト中...</p>
       </body>
     </html>
     """
@@ -120,8 +117,9 @@ def create_main_rich_menu():
                 bounds=RichMenuBounds(x=0,    y=0, width=833, height=1686),
                 action=URIAction(
                     label="Personalプラン",
-                    DOMAIN_PERSONAL = BaseConfig.DOMAIN_PERSONAL 
-                    )
+                    uri=f"{BaseConfig.DOMAIN_PERSONAL}/create-checkout/personal"
+                )
+
             ),
             # Plusプラン
             RichMenuArea(
