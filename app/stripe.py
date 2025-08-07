@@ -7,7 +7,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 # プラン名→Stripe Price ID のマッピング
 PRICE_IDS = {
-  "personal": "price_1RdgPx4gUt3SUpO2bjaAZv3c ",
+  "personal": "price_1RdgPx4gUt3SUpO2bjaAZv3c",
   "plus":     "price_DEF456",
   "premium":  "price_GHI789",
 }
